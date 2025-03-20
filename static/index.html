@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fall Detection Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Font Awesome for icons -->
+    <style>
+        /* Global Styles */
+        body {
+            background: linear-gradient(135deg, #1e1e2f 0%, #2a2a3d 100%);
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: #1a1a2e;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #00d4ff;
+            transition: color 0.3s;
+            gap: 15px;
+        }
+
+        .navbar-brand.med img {
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .navbar .nav-link,
+        .navbar .dropdown-toggle {
+            color: #e0e0e0;
+            transition: color 0.3s;
+        }
+
+        .navbar .nav-link:hover,
+        .navbar .dropdown-toggle:hover {
+            color: #00d4ff;
+        }
+
+        .dropdown-menu {
+            background: #2a2a3d;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .dropdown-item {
+            color: #e0e0e0;
+        }
+
+        .dropdown-item:hover {
+            background: #00d4ff;
+            color: #1a1a2e;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 20px;
+        }
+
+        .card {
+            background: #252540;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-body {
+            padding: 20px;
+            color: white;
+        }
+
+        .card h5 {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        /* Live Fall Alerts */
+        .live-card {
+            height: 500px;
+            overflow: hidden;
+        }
+
+        .live-card img {
+            border-radius: 8px;
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border: 2px solid #00d4ff;
+        }
+
+        .live-card p {
+            margin: 10px 0;
+            font-size: 1.1rem;
+        }
+
+        .live-card #status {
+            font-weight: bold;
+            color: #00ff85;
+        }
+
+        .live-card #last-fall {
+            color: #ff6b6b;
+        }
+
+        .btn-primary {
+            background: #00d4ff;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 20px;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #00b8e6;
+        }
+
+        /* Video & Image Log */
+        #log-list {
+            list-style: none;
+            padding: 0;
+            max-height: 150px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #00d4ff #2a2a3d;
+        }
+
+        #log-list li {
+            background: #2a2a3d;
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .live-card {
+                height: auto;
+            }
+
+            .live-card img {
+                height: 200px;
+            }
+
+            .main-content {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="/static/logo.webp" alt="Logo" width="30"> Fall Detection
+            </a>
+            <div class="ms-auto d-flex align-items-center">
+                <span class="text-white me-3">User Name</span>
+                <i class="fas fa-bell text-white me-3"></i>
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard -->
+    <div class="container main-content">
+        <div class="row">
+            <!-- Live Fall Alerts -->
+            <div class="col-md-8">
+                <div class="card live-card">
+                    <div class="card-body">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>Live Fall Alerts</h5>
+                        <p>Status: <span id="status">Safe</span></p>
+                        <p>Last Detected Fall: <span id="last-fall">-</span></p>
+                        <img src="/video_feed" class="img-fluid" id="live-feed">
+                        <button class="btn btn-primary mt-2" id="play-pause">Pause</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video & Image Log -->
+            <div class="col-md-4 ">
+                <div class="card">
+                    <div class="card-body">
+                        <h5><i class="fas fa-video me-2"></i>Fall Detected Log</h5>
+                        <ul id="log-list"></ul>
+                    </div>
+                </div>
+                <br>
+                <br>
+                <div class="card">
+                    <div class="card-body">
+                        <h5>More Information</h5>
+                        <ul id="log-list"></ul>
+                    </div>
+                </div>
+            </div>
+          
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Fetch fall status periodically
+        function updateStatus() {
+            fetch('/fall_status')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('status').textContent = data.status;
+                    if (data.status === "Fall Detected") {
+                        document.getElementById('last-fall').textContent = data.timestamp;
+                        const logList = document.getElementById('log-list');
+                        logList.innerHTML += `<li>${data.timestamp} - Fall Detected</li>`;
+                    }
+                });
+        }
+        setInterval(updateStatus, 2000);
+
+        // Play/Pause toggle
+        const playPauseBtn = document.getElementById('play-pause');
+        playPauseBtn.addEventListener('click', () => {
+            const feed = document.getElementById('live-feed');
+            feed.paused = !feed.paused;
+            playPauseBtn.textContent = feed.paused ? 'Play' : 'Pause';
+        });
+    </script>
+</body>
+
+</html>
