@@ -1,0 +1,4 @@
+inference-sdk
+opencv-python
+flask
+twilio
